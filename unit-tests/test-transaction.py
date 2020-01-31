@@ -6,6 +6,53 @@ import copy
 
 class TestTransactionMethods(unittest.TestCase):
 
+    # HELPER METHODS
+
+    # Returns [valid_tx, valid_unspent_tx_outs]
+    def create_valid_transaction_kit(self):
+        # Create valid transaction
+        private_key = generate_private_key()
+        public_key = private_key.get_verifying_key().to_der().encode('hex')
+        example_new_tx_in_1 = new_tx_in(
+            "testId270", 0, "testSignature")  # Signature will be updated
+        example_new_tx_in_2 = new_tx_in(
+            "testId271", 1, "testSignature")  # Signature will be updated
+        example_new_tx_ins = [example_new_tx_in_1, example_new_tx_in_2]
+        example_new_tx_out_1 = new_tx_out(
+            "A61B5BE06CD7FE6D95064DAC98C97C9C8D128BEFACF7EA655D4EDF5B09B7DFAB6D059DD0A64B8C3CE9A11FEDC38143819BDF9CD4BC23EDCECFBAEB7DECACC81FE84CA7DE4AD33C89C9E848A5A8E8BDFD3BEA7BB3C4F81B4D",
+            500)
+        example_new_tx_out_2 = new_tx_out(
+            "561B5BE06CD7FE6D95064DAC98C97C9C8D128BEFACF7EA655D4EDF5B09B7DFAB6D059DD0A64B8C3CE9A11FEDC38143819BDF9CD4BC23EDCECFBAEB7DECACC81FE84CA7DE4AD33C89C9E848A5A8E8BDFD3BEA7BB3C4F81B4D",
+            501)
+        example_new_tx_outs = [example_new_tx_out_1, example_new_tx_out_2]
+        example_new_transaction = new_transaction(
+            "testId28", example_new_tx_ins, example_new_tx_outs)
+        example_get_transaction_id = get_transaction_id(
+            example_new_transaction)
+        example_new_transaction['id'] = example_get_transaction_id
+        example_new_unspent_tx_out_1 = new_unspent_tx_out(
+            "testId270", 0, public_key, 500)
+        example_new_unspent_tx_out_2 = new_unspent_tx_out(
+            "testId271", 1, public_key, 501)
+        example_a_unspent_tx_outs = [
+            example_new_unspent_tx_out_1,
+            example_new_unspent_tx_out_2]
+        private_key = private_key.to_der().encode(
+            'hex')  # Create hex encoded private_key
+        signature = sign_tx_in(
+            example_new_transaction,
+            0,
+            private_key,
+            example_a_unspent_tx_outs)  # Sign tx_ins
+        # Update the signature
+        example_new_transaction['tx_ins'][0]['signature'] = signature
+        # Update the signature
+        example_new_transaction['tx_ins'][1]['signature'] = signature
+
+        return [example_new_transaction, example_a_unspent_tx_outs]
+
+    # TEST METHODS
+
     def test_new_unspent_tx_out(self):
 
         example_new_unspent_tx_out = new_unspent_tx_out(
@@ -115,43 +162,9 @@ class TestTransactionMethods(unittest.TestCase):
     def test_validate_transaction(self):
 
         # Create valid transaction
-        private_key = generate_private_key()
-        public_key = private_key.get_verifying_key().to_der().encode('hex')
-        example_new_tx_in_1 = new_tx_in(
-            "testId270", 0, "testSignature")  # Signature will be updated
-        example_new_tx_in_2 = new_tx_in(
-            "testId271", 1, "testSignature")  # Signature will be updated
-        example_new_tx_ins = [example_new_tx_in_1, example_new_tx_in_2]
-        example_new_tx_out_1 = new_tx_out(
-            "A61B5BE06CD7FE6D95064DAC98C97C9C8D128BEFACF7EA655D4EDF5B09B7DFAB6D059DD0A64B8C3CE9A11FEDC38143819BDF9CD4BC23EDCECFBAEB7DECACC81FE84CA7DE4AD33C89C9E848A5A8E8BDFD3BEA7BB3C4F81B4D",
-            500)
-        example_new_tx_out_2 = new_tx_out(
-            "561B5BE06CD7FE6D95064DAC98C97C9C8D128BEFACF7EA655D4EDF5B09B7DFAB6D059DD0A64B8C3CE9A11FEDC38143819BDF9CD4BC23EDCECFBAEB7DECACC81FE84CA7DE4AD33C89C9E848A5A8E8BDFD3BEA7BB3C4F81B4D",
-            501)
-        example_new_tx_outs = [example_new_tx_out_1, example_new_tx_out_2]
-        example_new_transaction = new_transaction(
-            "testId28", example_new_tx_ins, example_new_tx_outs)
-        example_get_transaction_id = get_transaction_id(
-            example_new_transaction)
-        example_new_transaction['id'] = example_get_transaction_id
-        example_new_unspent_tx_out_1 = new_unspent_tx_out(
-            "testId270", 0, public_key, 500)
-        example_new_unspent_tx_out_2 = new_unspent_tx_out(
-            "testId271", 1, public_key, 501)
-        example_a_unspent_tx_outs = [
-            example_new_unspent_tx_out_1,
-            example_new_unspent_tx_out_2]
-        private_key = private_key.to_der().encode(
-            'hex')  # Create hex encoded private_key
-        signature = sign_tx_in(
-            example_new_transaction,
-            0,
-            private_key,
-            example_a_unspent_tx_outs)  # Sign tx_ins
-        # Update the signature
-        example_new_transaction['tx_ins'][0]['signature'] = signature
-        # Update the signature
-        example_new_transaction['tx_ins'][1]['signature'] = signature
+        example_new_transaction_kit = self.create_valid_transaction_kit()
+        example_new_transaction = example_new_transaction_kit[0]
+        example_a_unspent_tx_outs = example_new_transaction_kit[1]
         example_validate_transaction = validate_transaction(
             example_new_transaction, example_a_unspent_tx_outs)
 
@@ -177,10 +190,6 @@ class TestTransactionMethods(unittest.TestCase):
         example_new_transaction_2 = copy.deepcopy(example_new_transaction)
         example_a_unspent_tx_outs_2 = copy.deepcopy(example_a_unspent_tx_outs)
         example_a_unspent_tx_outs_2[0]['tx_out_index'] = 2
-        # example_new_transaction_2['tx_ins'][0]['tx_out_index'] = 2
-        # example_get_transaction_id = get_transaction_id(
-        #     example_new_transaction_2)
-        # example_new_transaction_2['id'] = example_get_transaction_id
         example_validate_transaction = validate_transaction(
             example_new_transaction_2, example_a_unspent_tx_outs_2)
         self.assertEqual(False, example_validate_transaction)
@@ -192,6 +201,18 @@ class TestTransactionMethods(unittest.TestCase):
         example_validate_transaction = validate_transaction(
             example_new_transaction_2, example_a_unspent_tx_outs_2)
         self.assertEqual(False, example_validate_transaction)
+
+    # def test_validate_coinbase_tx(self):
+    #
+    #     # Create valid coinbase_tx
+    #     block_index = 3
+    #
+    #
+    #     self.assertEqual(True, example_is_valid_tx_in_structure)
+
+
+
+
 
 
 if __name__ == '__main__':
