@@ -1,6 +1,7 @@
 import unittest
 from bal.transaction import *
 from bal.wallet import generate_private_key
+import copy
 
 
 class TestTransactionMethods(unittest.TestCase):
@@ -113,6 +114,7 @@ class TestTransactionMethods(unittest.TestCase):
 
     def test_validate_transaction(self):
 
+        # Create valid transaction
         private_key = generate_private_key()
         public_key = private_key.get_verifying_key().to_der().encode('hex')
         example_new_tx_in_1 = new_tx_in(
@@ -153,7 +155,43 @@ class TestTransactionMethods(unittest.TestCase):
         example_validate_transaction = validate_transaction(
             example_new_transaction, example_a_unspent_tx_outs)
 
+        # Test valid transaction
         self.assertEqual(True, example_validate_transaction)
+
+        # Test invalid transaction structure
+
+        example_new_transaction_2 = copy.deepcopy(example_new_transaction)
+        example_new_transaction_2['tx_ins'][0]['tx_out_index'] = "this is invalid structure"
+        example_validate_transaction = validate_transaction(
+            example_new_transaction_2, example_a_unspent_tx_outs)
+        self.assertEqual(False, example_validate_transaction)
+
+        # Test invalid transaction id
+        example_new_transaction_2 = copy.deepcopy(example_new_transaction)
+        example_new_transaction_2['id'] = "this is invalid id"
+        example_validate_transaction = validate_transaction(
+            example_new_transaction_2, example_a_unspent_tx_outs)
+        self.assertEqual(False, example_validate_transaction)
+
+        # Test invalid tx_in
+        example_new_transaction_2 = copy.deepcopy(example_new_transaction)
+        example_a_unspent_tx_outs_2 = copy.deepcopy(example_a_unspent_tx_outs)
+        example_a_unspent_tx_outs_2[0]['tx_out_index'] = 2
+        # example_new_transaction_2['tx_ins'][0]['tx_out_index'] = 2
+        # example_get_transaction_id = get_transaction_id(
+        #     example_new_transaction_2)
+        # example_new_transaction_2['id'] = example_get_transaction_id
+        example_validate_transaction = validate_transaction(
+            example_new_transaction_2, example_a_unspent_tx_outs_2)
+        self.assertEqual(False, example_validate_transaction)
+
+        # Test not matching tx_in and tx_out total values
+        example_new_transaction_2 = copy.deepcopy(example_new_transaction)
+        example_a_unspent_tx_outs_2 = copy.deepcopy(example_a_unspent_tx_outs)
+        example_a_unspent_tx_outs_2[0]['amount'] = 0
+        example_validate_transaction = validate_transaction(
+            example_new_transaction_2, example_a_unspent_tx_outs_2)
+        self.assertEqual(False, example_validate_transaction)
 
 
 if __name__ == '__main__':
