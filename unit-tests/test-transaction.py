@@ -202,6 +202,17 @@ class TestTransactionMethods(unittest.TestCase):
             example_new_transaction_2, example_a_unspent_tx_outs_2)
         self.assertEqual(False, example_validate_transaction)
 
+    def test_new_coinbase_transaction(self):
+        example_address = "A61B5BE06CD7FE6D95064DAC98C97C9C8D128BEFACF7EA655D4EDF5B09B7DFAB6D059DD0A64B8C3CE9A11FEDC38143819BDF9CD4BC23EDCECFBAEB7DECACC81FE84CA7DE4AD33C89C9E848A5A8E8BDFD3BEA7BB3C4F81B4D"
+        example_block_index = 5
+        example_tx_in = new_tx_in('', example_block_index, '')
+        example_tx = new_transaction(None, [example_tx_in], [new_tx_out(example_address, COINBASE_AMOUNT)])
+        example_tx['id'] = get_transaction_id(example_tx)
+
+        example_new_coinbase_transaction = new_coinbase_transaction(example_address, example_block_index)
+        self.assertEqual(example_tx, example_new_coinbase_transaction)
+
+
     # def test_validate_coinbase_tx(self):
     #
     #     # Create valid coinbase_tx
