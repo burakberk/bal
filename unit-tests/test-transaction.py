@@ -283,13 +283,28 @@ class TestTransactionMethods(unittest.TestCase):
             None, example_block_index)
         self.assertEqual(False, example_validate_coinbase_tx)
 
-    # def test_validate_coinbase_tx(self):
-    #
-    #     # Create valid coinbase_tx
-    #     block_index = 3
-    #
-    #
-    #     self.assertEqual(True, example_is_valid_tx_in_structure)
+    def test_validate_block_transactions(self):
+        # Creating valid block transactions
+        valid_tx_kit_1 = self.create_valid_transaction_kit()
+        example_tx_1 = valid_tx_kit_1[0]
+        example_unspent_tx_outs_1 = valid_tx_kit_1[1]
+        valid_tx_kit_2 = self.create_valid_transaction_kit()
+        example_tx_2 = valid_tx_kit_2[0]
+        example_unspent_tx_outs_2 = valid_tx_kit_2[1]
+
+        # Creating a valid coinbase_tx
+        example_address = "A61B5BE06CD7FE6D95064DAC98C97C9C8D128BEFACF7EA655D4EDF5B09B7DFAB6D059DD0A64B8C3CE9A11FEDC38143819BDF9CD4BC23EDCECFBAEB7DECACC81FE84CA7DE4AD33C89C9E848A5A8E8BDFD3BEA7BB3C4F81B4D"
+        example_block_index = 1
+        example_new_coinbase_transaction = new_coinbase_transaction(
+            example_address, example_block_index)
+
+        a_transactions = [example_new_coinbase_transaction, example_tx_1, example_tx_2]
+        a_unspent_tx_outs = [example_unspent_tx_outs_1, example_unspent_tx_outs_2]
+
+        # Testing valid block transactions
+        example_validate_block_transactions = validate_block_transactions(a_transactions, a_unspent_tx_outs, example_block_index)
+        self.assertEqual(True, example_validate_block_transactions)
+
 
 
 if __name__ == '__main__':
