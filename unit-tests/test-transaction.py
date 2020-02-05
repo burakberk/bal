@@ -212,6 +212,55 @@ class TestTransactionMethods(unittest.TestCase):
         example_new_coinbase_transaction = new_coinbase_transaction(example_address, example_block_index)
         self.assertEqual(example_tx, example_new_coinbase_transaction)
 
+    def test_validate_coinbase_tx(self):
+        # Creating a valid coinbase_tx
+        example_address = "A61B5BE06CD7FE6D95064DAC98C97C9C8D128BEFACF7EA655D4EDF5B09B7DFAB6D059DD0A64B8C3CE9A11FEDC38143819BDF9CD4BC23EDCECFBAEB7DECACC81FE84CA7DE4AD33C89C9E848A5A8E8BDFD3BEA7BB3C4F81B4D"
+        example_block_index = 1
+        example_new_coinbase_transaction = new_coinbase_transaction(example_address, example_block_index)
+
+        # Test valid coinbase_tx
+        example_validate_coinbase_tx = validate_coinbase_tx(example_new_coinbase_transaction, example_block_index)
+        self.assertEqual(True, example_validate_coinbase_tx)
+
+        # Test invalid id
+        example_new_coinbase_transaction_2 = copy.deepcopy(example_new_coinbase_transaction)
+        example_new_coinbase_transaction_2['id'] = "invalid_id"
+        example_validate_coinbase_tx = validate_coinbase_tx(example_new_coinbase_transaction_2, example_block_index)
+        self.assertEqual(False, example_validate_coinbase_tx)
+
+        # Test invalid tx_ins count
+        example_new_coinbase_transaction_2 = copy.deepcopy(example_new_coinbase_transaction)
+        example_new_coinbase_transaction_2['tx_ins'].append(example_new_coinbase_transaction_2['tx_ins'][0])
+        example_new_coinbase_transaction_2['id'] = get_transaction_id(example_new_coinbase_transaction_2)
+        example_validate_coinbase_tx = validate_coinbase_tx(example_new_coinbase_transaction_2, example_block_index)
+        self.assertEqual(False, example_validate_coinbase_tx)
+
+        # Test invalid tx_in address
+        example_new_coinbase_transaction_2 = copy.deepcopy(example_new_coinbase_transaction)
+        example_new_coinbase_transaction_2['tx_ins'][0]['tx_out_index'] = 2
+        example_new_coinbase_transaction_2['id'] = get_transaction_id(example_new_coinbase_transaction_2)
+        example_validate_coinbase_tx = validate_coinbase_tx(example_new_coinbase_transaction_2, example_block_index)
+        self.assertEqual(False, example_validate_coinbase_tx)
+
+        # Test invalid number of txOuts
+        example_new_coinbase_transaction_2 = copy.deepcopy(example_new_coinbase_transaction)
+        example_new_coinbase_transaction_2['tx_outs'].append(example_new_coinbase_transaction_2['tx_outs'][0])
+        example_new_coinbase_transaction_2['id'] = get_transaction_id(example_new_coinbase_transaction_2)
+        example_validate_coinbase_tx = validate_coinbase_tx(example_new_coinbase_transaction_2, example_block_index)
+        self.assertEqual(False, example_validate_coinbase_tx)
+
+        # Test invalid coinbase amount in coinbase transaction
+        example_new_coinbase_transaction_2 = copy.deepcopy(example_new_coinbase_transaction)
+        example_new_coinbase_transaction_2['tx_outs'][0]['amount'] = COINBASE_AMOUNT - 1
+        example_new_coinbase_transaction_2['id'] = get_transaction_id(example_new_coinbase_transaction_2)
+        example_validate_coinbase_tx = validate_coinbase_tx(example_new_coinbase_transaction_2, example_block_index)
+        self.assertEqual(False, example_validate_coinbase_tx)
+
+        # Test whether the first tx in block is coinbase tx or not
+        example_validate_coinbase_tx = validate_coinbase_tx(None, example_block_index)
+        self.assertEqual(False, example_validate_coinbase_tx)
+
+
 
     # def test_validate_coinbase_tx(self):
     #
